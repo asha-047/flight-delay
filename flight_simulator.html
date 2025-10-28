@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>✈️ Flight Delay Predictor (API Client)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f7f9;
+    }
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #ffffff;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  
+</head>
+<body class="min-h-screen p-4 md:p-8 flex items-center justify-center">
+
+  <div class="w-full max-w-4xl bg-white shadow-2xl rounded-xl p-6 md:p-10" id="app-container">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-indigo-700">Flight Delay Predictor ✈️</h1>
+      <p class="text-gray-500 mt-2">Enter flight features to get a real-time prediction from the model API.</p>
+    </header>
+
+    <!-- Input Form -->
+    <div id="input-form-card" class="bg-indigo-50 p-6 rounded-lg border border-indigo-200">
+      <form id="prediction-form" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Airline Carrier -->
+        <div>
+          <label for="carrier" class="block text-sm font-medium text-gray-700 mb-1">Airline Carrier</label>
+          <select id="carrier" name="carrier" required
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+            <option value="">Select Airline</option>
+             <option value="AA">American Airlines (AA)</option>
+                <option value="B6">JetBlue (B6)</option>
+                <option value="DL">Delta Airlines (DL)</option>
+                <option value="UA">United Airlines (UA)</option>
+                <option value="WN">Southwest (WN)</option>
+                <option value="AS">Alaska Airlines (AS)</option>
+                <option value="F9">Frontier (F9)</option>
+                <option value="NK">Spirit (NK)</option>
+                <option value="HA">Hawaiian (HA)</option>
+                <option value="VX">Virgin America (VX)</option>
+          </select>
+        </div>
+
+        <!-- Origin -->
+<div>
+  <label for="origin" class="block text-sm font-medium text-gray-700 mb-1">Origin Airport</label>
+  <select id="origin" name="origin" required
+    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+    <option value="">Select Origin</option>
+     <option value="ATL">Atlanta (ATL)</option>
+                <option value="ORD">Chicago O’Hare (ORD)</option>
+                <option value="DFW">Dallas/Fort Worth (DFW)</option>
+                <option value="DEN">Denver (DEN)</option>
+                <option value="LAX">Los Angeles (LAX)</option>
+                <option value="SFO">San Francisco (SFO)</option>
+                <option value="LAS">Las Vegas (LAS)</option>
+                <option value="MIA">Miami (MIA)</option>
+                <option value="SEA">Seattle (SEA)</option>
+                <option value="BOS">Boston (BOS)</option>
+    <!-- Continue for all remaining airports -->
+  </select>
+</div>
+
+<!-- Destination -->
+<div>
+  <label for="dest" class="block text-sm font-medium text-gray-700 mb-1">Destination Airport</label>
+  <select id="dest" name="dest" required
+    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+    <option value="">Select Destination</option>
+      <option value="JFK">New York (JFK)</option>
+                <option value="LGA">LaGuardia (LGA)</option>
+                <option value="EWR">Newark (EWR)</option>
+                <option value="CLT">Charlotte (CLT)</option>
+                <option value="PHX">Phoenix (PHX)</option>
+                <option value="IAH">Houston (IAH)</option>
+                <option value="MSP">Minneapolis (MSP)</option>
+                <option value="DTW">Detroit (DTW)</option>
+                <option value="PHL">Philadelphia (PHL)</option>
+                <option value="BWI">Baltimore (BWI)</option>
+    <!-- Continue for all remaining airports -->
+  </select>
+</div>
+
+
+        <!-- Day of Week -->
+        <div>
+          <label for="day-of-week" class="block text-sm font-medium text-gray-700 mb-1">Day of Week</label>
+          <select id="day-of-week" name="day-of-week" required
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+            <option value="">Select Day</option>
+            <option value="1">1 (Monday)</option>
+            <option value="2">2 (Tuesday)</option>
+            <option value="3">3 (Wednesday)</option>
+            <option value="4">4 (Thursday)</option>
+            <option value="5">5 (Friday)</option>
+            <option value="6">6 (Saturday)</option>
+            <option value="7">7 (Sunday)</option>
+          </select>
+        </div>
+
+        <!-- Departure Hour -->
+        <div>
+          <label for="dep-time" class="block text-sm font-medium text-gray-700 mb-1">Departure Hour (0–23)</label>
+          <input type="number" id="dep-time" name="dep-time" min="0" max="23" step="1" required placeholder="e.g. 18 for 6 PM"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <!-- Flight Length -->
+        <div>
+          <label for="flight-length" class="block text-sm font-medium text-gray-700 mb-1">Flight Length (Minutes)</label>
+          <input type="number" id="flight-length" name="flight-length" min="30" max="600" step="10" required placeholder="e.g., 120"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <!-- Submit Button -->
+        <div class="md:col-span-3 pt-4">
+          <button type="submit" id="predict-btn"
+            class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md flex items-center justify-center disabled:opacity-50">
+            <span id="button-text">Predict Delay 🚦</span>
+            <div id="loading-spinner" class="spinner hidden ml-3"></div>
+          </button>
+          <div id="error-message" class="text-red-500 text-sm mt-3 hidden text-center"></div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- ✅ Dashboard Button -->
+    <div class="mt-8 text-center">
+        <a href="http://127.0.0.1:8050/" target="_blank" 
+           class="inline-block px-8 py-3 text-lg font-semibold text-white bg-green-600 rounded-lg shadow-md hover:bg-green-700 transition duration-300 transform hover:scale-105"
+           rel="noopener noreferrer">
+            📊 View Flight Delay Dashboard
+        </a>
+        <p class="text-sm text-gray-500 mt-2">Opens the interactive data visualization in a new tab.</p>
+        
+    </div>
+
+    <!-- Result Card -->
+    <div id="result-card" class="mt-8 p-6 rounded-xl shadow-xl hidden transition-all duration-500">
+      <h2 class="text-2xl font-bold mb-4 text-center">Prediction Result</h2>
+      <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8">
+        <div class="text-center">
+          <p class="text-sm font-medium text-gray-600">Prediction Status</p>
+          <p id="prediction-status" class="text-5xl font-extrabold mt-1"></p>
+        </div>
+        <div class="text-center md:border-l md:pl-8">
+          <p class="text-sm font-medium text-gray-600">Likelihood</p>
+          <p id="prediction-likelihood" class="text-3xl font-bold text-gray-700 mt-1">N/A</p>
+        </div>
+      </div>
+      <p id="result-detail" class="text-center text-gray-600 mt-6"></p>
+      <div class="flex justify-center mt-6">
+        <button onclick="resetUI()" class="py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg">
+          Run New Prediction
+        </button>
+      </div>
+    </div>
+  </div>
+  
+
+  
+
+  <script>
+    const API_URL = "http://127.0.0.1:5000/predict";
+
+     const originSelect = document.getElementById('origin');
+  const destSelect = document.getElementById('dest');
+
+  originSelect.addEventListener('change', () => {
+    const originVal = originSelect.value;
+    Array.from(destSelect.options).forEach(option => {
+      option.disabled = option.value === originVal;
+    });
+  });
+
+  destSelect.addEventListener('change', () => {
+    const destVal = destSelect.value;
+    Array.from(originSelect.options).forEach(option => {
+      option.disabled = option.value === destVal;
+    });
+  });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('prediction-form');
+      const resultCard = document.getElementById('result-card');
+      const predictBtn = document.getElementById('predict-btn');
+      const buttonText = document.getElementById('button-text');
+      const errorMessage = document.getElementById('error-message');
+
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        errorMessage.classList.add('hidden');
+
+        // validation
+        const requiredFields = Array.from(form.querySelectorAll('[required]'));
+        if (!requiredFields.every(field => field.value.trim() !== '')) {
+          errorMessage.textContent = "Please fill out all required fields.";
+          errorMessage.classList.remove('hidden');
+          return;
+        }
+
+        setLoading(true);
+
+        const formData = {
+          carrier: document.getElementById('carrier').value,
+          origin: document.getElementById('origin').value,
+          dest: document.getElementById('dest').value,
+          dayOfWeek: parseInt(document.getElementById('day-of-week').value, 10),
+          depHour: parseInt(document.getElementById('dep-time').value, 10),
+          length: parseInt(document.getElementById('flight-length').value, 10),
+        };
+
+        console.log("Sending data to API:", formData);
+        callPredictionAPI(formData);
+      });
+
+      function setLoading(isLoading) {
+        const loadingSpinner = document.getElementById('loading-spinner');
+        predictBtn.disabled = isLoading;
+        if (isLoading) {
+          buttonText.textContent = 'Contacting Model API...';
+          loadingSpinner.classList.remove('hidden');
+          resultCard.classList.add('hidden');
+        } else {
+          buttonText.textContent = 'Predict Delay 🚦';
+          loadingSpinner.classList.add('hidden');
+        }
+      }
+
+      async function callPredictionAPI(data, attempt = 0) {
+        const maxRetries = 3;
+        try {
+          const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+          const prediction = await response.json();
+          setLoading(false);
+          displayResult(processPrediction(prediction));
+        } catch (error) {
+          if (attempt < maxRetries) {
+            setTimeout(() => callPredictionAPI(data, attempt + 1), Math.pow(2, attempt) * 1000);
+          } else {
+            setLoading(false);
+            errorMessage.textContent = `Prediction failed. Make sure API is running at ${API_URL}`;
+            errorMessage.classList.remove('hidden');
+          }
+        }
+      }
+
+      function processPrediction(prediction) {
+        const status = prediction.status || 'UNCERTAIN';
+        const likelihood = Math.round(prediction.likelihood || 0);
+        const detail = prediction.detail || 'No details provided';
+
+        let color = 'bg-gray-100 border-gray-500';
+        let statusText = status.toUpperCase();
+        if (statusText === 'ON TIME') color = 'bg-green-100 border-green-500';
+        else if (statusText === 'DELAYED') color = 'bg-red-100 border-red-500';
+
+        return { status: statusText, likelihood: likelihood + '%',  color };
+      }
+
+      function displayResult(pred) {
+        const statusEl = document.getElementById('prediction-status');
+        const likelihoodEl = document.getElementById('prediction-likelihood');
+        const detailEl = document.getElementById('result-detail');
+
+        resultCard.className = `mt-8 p-6 rounded-xl shadow-xl transition-all duration-500 border-4 ${pred.color}`;
+        resultCard.classList.remove('hidden');
+
+        statusEl.textContent = pred.status;
+        likelihoodEl.textContent = pred.likelihood;
+        detailEl.textContent = pred.detail;
+
+        statusEl.className = `text-5xl font-extrabold mt-1 ${pred.status === 'DELAYED' ? 'text-red-600' : 'text-green-600'}`;
+      }
+    });
+
+    window.resetUI = function() {
+      document.getElementById('prediction-form').reset();
+      document.getElementById('result-card').classList.add('hidden');
+      document.getElementById('error-message').classList.add('hidden');
+    }
+  </script>
+
+</body>
+</html>
